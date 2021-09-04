@@ -42,36 +42,7 @@
 #include "firmware.h"
 #include "ftp_service.h"
 
-/*
- * @brief   Application entry point.
- */
-static void MainTask(void *pvParameters);
 static uint8_t gl_NodeAddr[6];
-
-int main(void)
-{
-	/* Init board hardware. */
-	BOARD_InitBootPins();
-	BOARD_InitBootClocks();
-	BOARD_InitBootPeripherals();
-
-	uint32_t boot_is_pushed = GPIO_PinRead(BOARD_BOOT_GPIO, BOARD_BOOT_PIN);
-	HPrintf("\r\nBOOT pin is : [%s]\r\n", boot_is_pushed ? "PUSHED" : "NOT PUSHED");
-	uint32_t stay_in_boot = 1;
-	ReadDataFromEEPROM(SM_BOOT_EXEC, (BYTE*)&stay_in_boot, sizeof stay_in_boot);
-	HPrintf("\r\nSTAY IN BOOT is : [%s]\r\n", stay_in_boot ? "SET" : "NOT SET");
-
-	if (boot_is_pushed || stay_in_boot)
-	{
-		xTaskCreate(MainTask, "MainTask", 256, NULL, (tskIDLE_PRIORITY + 1), NULL);
-		//xTaskCreate(ftp_server_task, "ftp_server_task", 256, NULL, (tskIDLE_PRIORITY + 1), NULL);
-		vTaskStartScheduler();
-	}
-	else
-		BootToApp();
-	return 0; // Never reached!
-}
-
 static const char *version_date[] = { __DATE__, __TIME__ };
 const char* version(int ver)
 {
@@ -113,4 +84,31 @@ static void MainTask(void *pvParameters)
 			GPIO_PortToggle(BOARD_LED_GREEN_GPIO, (1u << BOARD_LED_GREEN_PIN));
 		}
 	}
+}
+
+/*
+ * @brief   Application entry point.
+ */
+int main(void)
+{
+	/* Init board hardware. */
+	BOARD_InitBootPins();
+	BOARD_InitBootClocks();
+	BOARD_InitBootPeripherals();
+
+	uint32_t boot_is_pushed = GPIO_PinRead(BOARD_BOOT_GPIO, BOARD_BOOT_PIN);
+	HPrintf("\r\nBOOT pin is : [%s]\r\n", boot_is_pushed ? "PUSHED" : "NOT PUSHED");
+	uint32_t stay_in_boot = 1;
+	ReadDataFromEEPROM(SM_BOOT_EXEC, (BYTE*)&stay_in_boot, sizeof stay_in_boot);
+	HPrintf("\r\nSTAY IN BOOT is : [%s]\r\n", stay_in_boot ? "SET" : "NOT SET");
+
+	if (boot_is_pushed || stay_in_boot)
+	{
+		xTaskCreate(MainTask, "MainTask", 256, NULL, (tskIDLE_PRIORITY + 1), NULL);
+		//xTaskCreate(ftp_server_task, "ftp_server_task", 256, NULL, (tskIDLE_PRIORITY + 1), NULL);
+		vTaskStartScheduler();
+	}
+	else
+		BootToApp();
+	return 0; // Never reached!
 }
