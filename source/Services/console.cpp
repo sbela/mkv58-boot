@@ -10,6 +10,7 @@
 #include "console.h"
 #include "firmware.h"
 #include "mutexlocker.h"
+#include "EEPROM.h"
 
 static SemaphoreHandle_t xUARTSemaphore = nullptr;
 
@@ -182,7 +183,7 @@ static void ProcessCommand(int len)
 {
 	if (strpos(command_buffer, "firm:") == 0)
 	{
-		int firmware_length = atoi(command_buffer + 5);
+		int firmware_length = atoi(command_buffer + strlen("firm:"));
 		if ((firmware_length > 0) && (firmware_length < FLASH_APP_LENGTH))
 		{
 			if (InitFirmwareTransfer(firmware_length))
@@ -195,6 +196,14 @@ static void ProcessCommand(int len)
 	if (strpos(command_buffer, "bootapp:") == 0)
 	{
 		BootToApp();
+	}
+	if (strpos(command_buffer, "setboot:") == 0)
+	{
+		int boot = atoi(command_buffer + strlen("setboot:")) ? 1 : 0;
+		WriteDataToEEPROM(SM_BOOT_EXEC, (BYTE*)&boot, sizeof boot);
+		uint32_t stay_in_boot = 1000;
+		ReadDataFromEEPROM(SM_BOOT_EXEC, (BYTE*)&stay_in_boot, sizeof stay_in_boot);
+		Printf("\r\nBoot to app [%d]", stay_in_boot);
 	}
 	if (strpos(command_buffer, "ver") == 0)
 	{

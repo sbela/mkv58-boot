@@ -96,18 +96,18 @@ int main(void)
 
 	uint32_t boot_is_pushed = GPIO_PinRead(BOARD_BOOT_GPIO, BOARD_BOOT_PIN);
 	HPrintf("\r\nBOOT pin is : [%s]\r\n", boot_is_pushed ? "PUSHED" : "NOT PUSHED");
-	uint32_t stay_in_boot = 1;
+	uint32_t stay_in_boot = 1000;
 	ReadDataFromEEPROM(SM_BOOT_EXEC, (BYTE*)&stay_in_boot, sizeof stay_in_boot);
-	HPrintf("\r\nSTAY IN BOOT is : [%s]\r\n", stay_in_boot ? "SET" : "NOT SET");
+	HPrintf("\r\nSTAY IN BOOT is [%d]: [%s]\r\n", stay_in_boot, stay_in_boot ? "SET" : "NOT SET");
 
-	//if (boot_is_pushed || stay_in_boot)
+	if (boot_is_pushed || stay_in_boot)
 	{
 		xTaskCreate(MainTask, "MainTask", 256, NULL, (tskIDLE_PRIORITY + 1), NULL);
 		//xTaskCreate(network_init, "network_init", 256, NULL, (tskIDLE_PRIORITY + 1), NULL);
 		//xTaskCreate(ftp_server_task, "ftp_server_task", 256, NULL, (tskIDLE_PRIORITY + 1), NULL);
 		vTaskStartScheduler();
 	}
-	//else
+	else
 		BootToApp();
 	return 0; // Never reached!
 }
