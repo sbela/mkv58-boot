@@ -162,27 +162,6 @@ void SetInputState(InputState state)
 	input_state = state;
 }
 
-static void ProcessCommand(int len)
-{
-	if (strpos(command_buffer, "firm:") == 0)
-	{
-		int firmware_length = atoi(command_buffer + 5);
-		if ((firmware_length > 0) && (firmware_length < FLASH_APP_LENGTH))
-		{
-			if (InitFirmwareTransfer(firmware_length))
-				input_state = IS_Firmware;
-		}
-		else
-			Printf("\r\nInvalid firmware length: %d", firmware_length);
-		return;
-	}
-	if (strpos(command_buffer, "ver") == 0)
-	{
-		Printf("BUILT: %s %s\r\n", version(0), version(1));
-		return;
-	}
-}
-
 //--------------------------------------------------------------------------------------//
 extern "C" void vApplicationStackOverflowHook(xTaskHandle *pxTask, signed char *pcTaskName)
 {
@@ -197,4 +176,29 @@ void HardFault_Handler(void)
 	HPrintf("\r\n-----------[ HARD FAULT ]-------------\r\n");
 	while (1)
 		;
+}
+
+static void ProcessCommand(int len)
+{
+	if (strpos(command_buffer, "firm:") == 0)
+	{
+		int firmware_length = atoi(command_buffer + 5);
+		if ((firmware_length > 0) && (firmware_length < FLASH_APP_LENGTH))
+		{
+			if (InitFirmwareTransfer(firmware_length))
+				input_state = IS_Firmware;
+		}
+		else
+			Printf("\r\nInvalid firmware length: %d", firmware_length);
+		return;
+	}
+	if (strpos(command_buffer, "bootapp:") == 0)
+	{
+		BootToApp();
+	}
+	if (strpos(command_buffer, "ver") == 0)
+	{
+		Printf("BUILT: %s %s\r\n", version(0), version(1));
+		return;
+	}
 }
