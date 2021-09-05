@@ -201,6 +201,10 @@ void sys_check_core_locking(void);
 #define LWIP_ICMP                       1
 #endif
 
+/* ---------- RAW options ---------- */
+#if !defined LWIP_RAW
+#define LWIP_RAW 1
+#endif
 
 /* ---------- DHCP options ---------- */
 /* Define LWIP_DHCP to 1 if you want DHCP configuration of
@@ -223,7 +227,7 @@ void sys_check_core_locking(void);
 #define LWIP_STATS 0
 #endif
 #ifndef LWIP_PROVIDE_ERRNO
-#define LWIP_PROVIDE_ERRNO 1
+#define LWIP_PROVIDE_ERRNO	1
 #endif
 
 /*

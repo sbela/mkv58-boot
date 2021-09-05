@@ -19,23 +19,24 @@
  ******************************************************************************/
 
 /*! @brief PHY driver version */
-#define FSL_PHY_DRIVER_VERSION (MAKE_VERSION(2, 0, 0)) /*!< Version 2.0.0. */
+#define FSL_PHY_DRIVER_VERSION (MAKE_VERSION(2, 1, 0)) /*!< Version 2.1.0. */
 
 /*! @brief Defines the PHY registers. */
-#define PHY_CONTROL1_REG 0x1EU /*!< The PHY control one register. */
+#define PHY_CONTROL1_REG 0x11U /*!< The PHY control one register. */
 #define PHY_CONTROL2_REG 0x1FU /*!< The PHY control two register. */
 
 #define PHY_CONTROL_ID1 0x22U /*!< The PHY ID1*/
+#define PHY_CONTROL_ID2 0x03U /*!< The PHY ID2*/
 
 /*!@brief Defines the mask flag of operation mode in control two register*/
-#define PHY_CTL1_REMOTELOOP_MASK    0x0008U /*!< The PHY remote loopback mask. */
+#define PHY_CTL1_REMOTELOOP_MASK    0x0200U /*!< The PHY remote loopback mask. */
 #define PHY_CTL2_10HALFDUPLEX_MASK  0x0004U /*!< The PHY 10M half duplex mask. */
 #define PHY_CTL2_100HALFDUPLEX_MASK 0x0008U /*!< The PHY 100M half duplex mask. */
 #define PHY_CTL2_10FULLDUPLEX_MASK  0x0014U /*!< The PHY 10M full duplex mask. */
 #define PHY_CTL2_100FULLDUPLEX_MASK 0x0018U /*!< The PHY 100M full duplex mask. */
 
 /*! @brief ENET MDIO operations structure. */
-extern const phy_operations_t phyksz8041_ops;
+extern const phy_operations_t phy8742a_ops;
 
 /*******************************************************************************
  * API
@@ -61,7 +62,7 @@ extern "C" {
  * @retval kStatus_PHY_SMIVisitTimeout  PHY SMI visit time out
  * @retval kStatus_PHY_AutoNegotiateFail  PHY auto negotiate fail
  */
-status_t PHY_KSZ8041_Init(phy_handle_t *handle, const phy_config_t *config);
+status_t PHY_LAN8742A_Init(phy_handle_t *handle, const phy_config_t *config);
 
 /*!
  * @brief PHY Write function. This function write data over the SMI to
@@ -73,7 +74,7 @@ status_t PHY_KSZ8041_Init(phy_handle_t *handle, const phy_config_t *config);
  * @retval kStatus_Success     PHY write success
  * @retval kStatus_PHY_SMIVisitTimeout  PHY SMI visit time out
  */
-status_t PHY_KSZ8041_Write(phy_handle_t *handle, uint32_t phyReg, uint32_t data);
+status_t PHY_LAN8742A_Write(phy_handle_t *handle, uint32_t phyReg, uint32_t data);
 
 /*!
  * @brief PHY Read function. This interface read data over the SMI from the
@@ -85,7 +86,7 @@ status_t PHY_KSZ8041_Write(phy_handle_t *handle, uint32_t phyReg, uint32_t data)
  * @retval kStatus_Success  PHY read success
  * @retval kStatus_PHY_SMIVisitTimeout  PHY SMI visit time out
  */
-status_t PHY_KSZ8041_Read(phy_handle_t *handle, uint32_t phyReg, uint32_t *dataPtr);
+status_t PHY_LAN8742A_Read(phy_handle_t *handle, uint32_t phyReg, uint32_t *dataPtr);
 
 /*!
  * @brief Enables/disables PHY loopback.
@@ -99,7 +100,7 @@ status_t PHY_KSZ8041_Read(phy_handle_t *handle, uint32_t phyReg, uint32_t *dataP
  * @retval kStatus_Success  PHY loopback success
  * @retval kStatus_PHY_SMIVisitTimeout  PHY SMI visit time out
  */
-status_t PHY_KSZ8041_EnableLoopback(phy_handle_t *handle, phy_loop_t mode, phy_speed_t speed, bool enable);
+status_t PHY_LAN8742A_EnableLoopback(phy_handle_t *handle, phy_loop_t mode, phy_speed_t speed, bool enable);
 
 /*!
  * @brief Gets the PHY link status.
@@ -111,7 +112,7 @@ status_t PHY_KSZ8041_EnableLoopback(phy_handle_t *handle, phy_loop_t mode, phy_s
  * @retval kStatus_Success   PHY gets link status success
  * @retval kStatus_PHY_SMIVisitTimeout  PHY SMI visit time out
  */
-status_t PHY_KSZ8041_GetLinkStatus(phy_handle_t *handle, bool *status);
+status_t PHY_LAN8742A_GetLinkStatus(phy_handle_t *handle, bool *status);
 
 /*!
  * @brief Gets the PHY link speed and duplex.
@@ -122,7 +123,7 @@ status_t PHY_KSZ8041_GetLinkStatus(phy_handle_t *handle, bool *status);
  * @retval kStatus_Success   PHY gets link speed and duplex success
  * @retval kStatus_PHY_SMIVisitTimeout  PHY SMI visit time out
  */
-status_t PHY_KSZ8041_GetLinkSpeedDuplex(phy_handle_t *handle, phy_speed_t *speed, phy_duplex_t *duplex);
+status_t PHY_LAN8742A_GetLinkSpeedDuplex(phy_handle_t *handle, phy_speed_t *speed, phy_duplex_t *duplex);
 
 /* @} */
 

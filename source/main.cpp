@@ -41,6 +41,7 @@
 #include "console.h"
 #include "firmware.h"
 #include "ftp_service.h"
+#include "network.h"
 
 static uint8_t gl_NodeAddr[6];
 static const char *version_date[] = { __DATE__, __TIME__ };
@@ -105,6 +106,7 @@ int main(void)
 	if (boot_is_pushed || stay_in_boot)
 	{
 		xTaskCreate(MainTask, "MainTask", 256, NULL, (tskIDLE_PRIORITY + 1), NULL);
+		//xTaskCreate(network_init, "network_init", 256, NULL, (tskIDLE_PRIORITY + 1), NULL);
 		//xTaskCreate(ftp_server_task, "ftp_server_task", 256, NULL, (tskIDLE_PRIORITY + 1), NULL);
 		vTaskStartScheduler();
 	}
