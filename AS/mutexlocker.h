@@ -26,10 +26,7 @@ public:
 		if (LIKELY(m))
 		{
 			 if (xSemaphoreTake(m, (TickType_t)10) == pdTRUE)
-			 {
 				 m_ptr |= uint32_t(1u);
-				 HPrintf("{LOCK[%d]}", m_ptr);
-			 }
 		}
 	}
 
@@ -41,7 +38,6 @@ public:
 		{
 			m_ptr &= ~uint32_t(1u);
 			xSemaphoreGive(mutex());
-			HPrintf("{UNLOCK[%d]}", m_ptr);
 		}
 	}
 

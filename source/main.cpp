@@ -43,7 +43,6 @@
 #include "ftp_service.h"
 #include "network.h"
 
-static uint8_t gl_NodeAddr[6];
 static const char *version_date[] = { __DATE__, __TIME__ };
 const char* version(int ver)
 {
@@ -58,7 +57,8 @@ static void MainTask(void *pvParameters)
 	int ulFlashRate = 0;
 	int FlashTimer = 0;
 
-	ReadEEPROMNodeAddress(gl_NodeAddr);
+	InitConsole();
+	InitMACAddress();
 
 	Printf("\r\n");
 	Printf("*********************************\r\n");
@@ -66,13 +66,10 @@ static void MainTask(void *pvParameters)
 	Printf("V1.0\r\n");
 	Printf("Created: 2021.09\r\n");
 	Printf("Program: AutoSys boot program\r\n");
-	Printf("Node ID: %02x:%02x:%02x:%02x:%02x:%02x\r\n", gl_NodeAddr[0],
-			gl_NodeAddr[1], gl_NodeAddr[2], gl_NodeAddr[3], gl_NodeAddr[4],
-			gl_NodeAddr[5]);
+	PrintMACAddress();
 	Printf("BUILT: %s %s\r\n", version_date[0], version_date[1]);
 	Printf("*********************************\r\n");
-	Printf("- RUN: uart task:");
-	Printf("0x%x\r\n", xTaskCreate(uart_task, "uart_task", 256, NULL, tskIDLE_PRIORITY, NULL));
+	Printf("- RUN: uart task: 0x%x\r\n", xTaskCreate(uart_task, "uart_task", 256, NULL, tskIDLE_PRIORITY, NULL));
 
 	while (1)
 	{
@@ -82,7 +79,7 @@ static void MainTask(void *pvParameters)
 			if (++ulFlashRate >= 4)
 				ulFlashRate = 0;
 			FlashTimer = 0;
-			GPIO_PortToggle(BOARD_LED_GREEN_GPIO, (1u << BOARD_LED_GREEN_PIN));
+			GPIO_PortToggle(BOARD_LED_GREEN_GPIO, BOARD_LED_GREEN_PIN_MASK);
 		}
 	}
 }
@@ -103,14 +100,14 @@ int main(void)
 	ReadDataFromEEPROM(SM_BOOT_EXEC, (BYTE*)&stay_in_boot, sizeof stay_in_boot);
 	HPrintf("\r\nSTAY IN BOOT is : [%s]\r\n", stay_in_boot ? "SET" : "NOT SET");
 
-	if (boot_is_pushed || stay_in_boot)
+	//if (boot_is_pushed || stay_in_boot)
 	{
 		xTaskCreate(MainTask, "MainTask", 256, NULL, (tskIDLE_PRIORITY + 1), NULL);
 		//xTaskCreate(network_init, "network_init", 256, NULL, (tskIDLE_PRIORITY + 1), NULL);
 		//xTaskCreate(ftp_server_task, "ftp_server_task", 256, NULL, (tskIDLE_PRIORITY + 1), NULL);
 		vTaskStartScheduler();
 	}
-	else
+	//else
 		BootToApp();
 	return 0; // Never reached!
 }

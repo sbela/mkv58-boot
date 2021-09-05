@@ -108,8 +108,7 @@ void uart_task(void *pvParameters)
 	uint8_t recv_buffer[8];
 	memset(command_buffer, 0, COMMAND_LEN);
 
-	Printf("- RUN: serial rx task\r\n");
-
+	Printf("- RUN: serial RX task\r\n%s", prompt);
 	/* Receive user input and send it back to terminal. */
 	do
 	{

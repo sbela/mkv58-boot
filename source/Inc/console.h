@@ -27,6 +27,7 @@ int Printf(const  char *format, ...);
 void uart_task(void *pvParameters);
 const char *version(int ver);
 void SetInputState(InputState state);
+void InitConsole();
 
 #ifdef __cplusplus
 }
