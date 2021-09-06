@@ -35,7 +35,7 @@ const phy_operations_t phy8742a_ops = { .phyInit = PHY_LAN8742A_Init,
 
 status_t PHY_LAN8742A_Init(phy_handle_t *handle, const phy_config_t *config)
 {
-	HPrintf("\r\nInitializing PHY_LAN8742A_Init...");
+	//HPrintf("\r\nInitializing LAN8742A...");
 	uint32_t bssReg;
 	uint32_t counter = PHY_TIMEOUT_COUNT;
 	uint32_t idReg1 = 0, idReg2 = 0;
@@ -56,13 +56,12 @@ status_t PHY_LAN8742A_Init(phy_handle_t *handle, const phy_config_t *config)
 
 	if (!counter)
 	{
-		HPrintf("\r\nPHY ID1: Failed! [%08x]", idReg1);
+		HPrintf("\r\nPHY ID1: Failed! [%08x]@%d", idReg1, counter);
 		return kStatus_Fail;
 	}
-	HPrintf("\r\nPHY ID1: %08x TO:%d", idReg1, counter);
 
 	counter = PHY_TIMEOUT_COUNT;
-	while ((idReg2 != PHY_CONTROL_ID2) && (counter != 0))
+	while (((idReg2 & ~0xf) != PHY_CONTROL_ID2) && (counter != 0))
 	{
 		MDIO_Read(handle->mdioHandle, handle->phyAddr, PHY_ID2_REG, &idReg2);
 		counter--;
@@ -73,10 +72,8 @@ status_t PHY_LAN8742A_Init(phy_handle_t *handle, const phy_config_t *config)
 		HPrintf("\r\nPHY ID2: Failed! [%08x]", idReg2);
 		return kStatus_Fail;
 	}
-	HPrintf("\r\nPHY ID2: %08x TO:%d", idReg2, counter);
 
 	/* Reset PHY. */
-	counter = PHY_TIMEOUT_COUNT;
 	result = MDIO_Write(handle->mdioHandle, handle->phyAddr, PHY_BASICCONTROL_REG, PHY_BCTL_RESET_MASK);
 	if (result == kStatus_Success)
 	{
@@ -90,6 +87,7 @@ status_t PHY_LAN8742A_Init(phy_handle_t *handle, const phy_config_t *config)
 					(PHY_BCTL_AUTONEG_MASK | PHY_BCTL_RESTART_AUTONEG_MASK));
 			if (result == kStatus_Success)
 			{
+				counter = PHY_TIMEOUT_COUNT;
 				/* Check auto negotiation complete. */
 				while (counter--)
 				{

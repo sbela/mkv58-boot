@@ -25,7 +25,7 @@ public:
 		m_ptr = uint32_t(m);
 		if (LIKELY(m))
 		{
-			 if (xSemaphoreTake(m, (TickType_t)10) == pdTRUE)
+			 if (xSemaphoreTake(m, (TickType_t)portMAX_DELAY) == pdTRUE)
 				 m_ptr |= uint32_t(1u);
 		}
 	}
@@ -47,7 +47,7 @@ public:
 		{
 			if ((m_ptr & uint32_t(1u)) == uint32_t(0u))
 			{
-				 if (xSemaphoreTake(mutex(), (TickType_t)10) == pdTRUE)
+				 if (xSemaphoreTake(mutex(), (TickType_t)portMAX_DELAY) == pdTRUE)
 					 m_ptr |= uint32_t(1u);
 			}
 		}

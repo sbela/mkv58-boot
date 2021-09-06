@@ -80,7 +80,7 @@ status_t ENET_MDIO_Write(mdio_handle_t *handle, uint32_t phyAddr, uint32_t devAd
     /* Clear MII interrupt event. */
     ENET_ClearInterruptStatus(base, ENET_EIR_MII_MASK);
 
-	HPrintf("\r\nMDIO W:PHY[%08x] ADDR[%08x] DATA:[%08x]", phyAddr, devAddr, data);
+	//HPrintf("\r\nMDIO W:PHY[%08x] ADDR[%08x] DATA:[%08x]", phyAddr, devAddr, data);
     return kStatus_Success;
 }
 
@@ -108,6 +108,6 @@ status_t ENET_MDIO_Read(mdio_handle_t *handle, uint32_t phyAddr, uint32_t devAdd
     /* Clear MII interrupt event. */
     ENET_ClearInterruptStatus(base, ENET_EIR_MII_MASK);
 
-	HPrintf("\r\nMDIO R:PHY[%08x] ADDR[%08x] -> [%08x]", phyAddr, devAddr, *dataPtr);
+	//HPrintf("\r\nMDIO R:PHY[%08x] ADDR[%08x] -> [%08x]", phyAddr, devAddr, *dataPtr);
     return kStatus_Success;
 }

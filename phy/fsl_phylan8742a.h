@@ -25,8 +25,8 @@
 #define PHY_CONTROL1_REG 0x11U /*!< The PHY control one register. */
 #define PHY_CONTROL2_REG 0x1FU /*!< The PHY control two register. */
 
-#define PHY_CONTROL_ID1 0x22U /*!< The PHY ID1*/
-#define PHY_CONTROL_ID2 0x03U /*!< The PHY ID2*/
+#define PHY_CONTROL_ID1 0x07U /*!< The PHY ID1*/
+#define PHY_CONTROL_ID2 0xc130U /*!< The PHY ID2*/
 
 /*!@brief Defines the mask flag of operation mode in control two register*/
 #define PHY_CTL1_REMOTELOOP_MASK    0x0200U /*!< The PHY remote loopback mask. */

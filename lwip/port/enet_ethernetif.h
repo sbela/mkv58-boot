@@ -170,7 +170,7 @@ err_t ethernetif1_init(struct netif *netif);
  *
  * @param netif the lwip network interface structure for this ethernetif
  */
-void ethernetif_input( struct netif *netif);
+void ethernetif_input(struct netif *netif);
 
 #if defined(__cplusplus)
 }
