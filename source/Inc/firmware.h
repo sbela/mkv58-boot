@@ -11,9 +11,23 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/*
+	0x10100000	 ---------------
+				|				|
+				|	DOWNLOAD	|
+				|				|
+	0x10090000	 ---------------
+				|				|
+				|	  APP		|
+				|				|
+	0x10020000	 ---------------
+				|	  BOOT		|
+	0x10000000	 ---------------
+*/
 #define FLASH_VALIDATE_KEY				0x6B65666B
 #define FLASH_APP_START_ADDR			0x10020000
-#define FLASH_APP_LENGTH				0x000e0000
+#define FLASH_APP_LENGTH				0x00070000
+#define FLASH_DOWNLOAD_START_ADDR		0x10090000
 #define APP_VECTOR_TABLE 				((uint32_t *)FLASH_APP_START_ADDR)
 #define FLASH_PAGE_SIZE					8192
 

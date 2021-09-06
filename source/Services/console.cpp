@@ -79,6 +79,7 @@ static void ProcessReceived(uint8_t *buffer, int len)
 		{
 			command_buffer[command_ptr] = 0;
 			command_ptr--;
+			UART_RTOS_Send(&UART0_rtos_handle, (const uint8_t*)" \b", 2);
 		}
 		else if (*buffer == '\r' || *buffer == '\n')
 		{
@@ -178,7 +179,7 @@ void HardFault_Handler(void)
 {
 	HPrintf("\r\n-----------[ HARD FAULT ]-------------\r\n");
 	while (1)
-		;
+			;
 }
 
 #define HELP(x)	Printf("\r\n\t" x);
@@ -196,7 +197,7 @@ static void ProcessCommand(int len)
 			Printf("\r\nInvalid firmware length: %d", firmware_length);
 		return;
 	}
-	if (strpos(command_buffer, "bootapp:") == 0)
+	if (strpos(command_buffer, "bootapp") == 0)
 	{
 		BootToApp();
 	}
@@ -204,10 +205,13 @@ static void ProcessCommand(int len)
 	{
 		NVIC_SystemReset();
 	}
-	if (strpos(command_buffer, "setboot:") == 0)
+	if (strpos(command_buffer, "setboot") == 0)
 	{
-		int boot = atoi(command_buffer + strlen("setboot:")) ? 1 : 0;
-		WriteDataToEEPROM(SM_BOOT_EXEC, (BYTE*)&boot, sizeof boot);
+		if (command_buffer[strlen("setboot")] == ' ')
+		{
+			int boot = atoi(command_buffer + strlen("setboot ")) ? 1 : 0;
+			WriteDataToEEPROM(SM_BOOT_EXEC, (BYTE*)&boot, sizeof boot);
+		}
 		uint32_t stay_in_boot = 1000;
 		ReadDataFromEEPROM(SM_BOOT_EXEC, (BYTE*)&stay_in_boot, sizeof stay_in_boot);
 		Printf("\r\nBoot to app [%d]", stay_in_boot);
