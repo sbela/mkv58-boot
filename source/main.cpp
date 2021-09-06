@@ -74,6 +74,7 @@ static void MainTask(void *pvParameters)
 	while (1)
 	{
 		vTaskDelay(10);
+		GPIO_PinWrite(BOARD_LED_RED_GPIO, BOARD_LED_RED_PIN, not GPIO_PinRead(BOARD_BOOT_GPIO, BOARD_BOOT_PIN));
 		if (++FlashTimer > ulFlashRates[ulFlashRate])
 		{
 			if (++ulFlashRate >= 4)
@@ -94,7 +95,7 @@ int main(void)
 	BOARD_InitBootClocks();
 	BOARD_InitBootPeripherals();
 
-	uint32_t boot_is_pushed = GPIO_PinRead(BOARD_BOOT_GPIO, BOARD_BOOT_PIN);
+	uint32_t boot_is_pushed = not GPIO_PinRead(BOARD_BOOT_GPIO, BOARD_BOOT_PIN);
 	HPrintf("\r\nBOOT pin is : [%s]\r\n", boot_is_pushed ? "PUSHED" : "NOT PUSHED");
 	uint32_t stay_in_boot = 1000;
 	ReadDataFromEEPROM(SM_BOOT_EXEC, (BYTE*)&stay_in_boot, sizeof stay_in_boot);

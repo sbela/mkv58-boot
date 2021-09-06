@@ -189,13 +189,13 @@ BOARD_InitPins:
 - options: {callFromInitBoot: 'true', prefix: BOARD_, coreID: core0, enableClock: 'true'}
 - pin_list:
   - {pin_num: '21', peripheral: GPIOE, signal: 'GPIO, 19', pin_signal: HSADC0B_CH1/ADC0_SE6a/PTE19/SPI0_SIN/UART2_RTS_b/I2C0_SCL/CMP3_OUT, direction: INPUT, gpio_interrupt: no_init,
-    drive_strength: high, pull_select: up}
+    drive_strength: high, pull_select: up, pull_enable: enable}
   - {pin_num: '25', peripheral: UART0, signal: TX, pin_signal: HSADC0A_CH8/ADC0_SE5b/PTE20/FTM1_CH0/UART0_TX/FTM1_QD_PHA, direction: OUTPUT}
   - {pin_num: '26', peripheral: UART0, signal: RX, pin_signal: HSADC0A_CH9/HSADC1A_CH7/PTE21/XB_IN9/FTM1_CH1/UART0_RX/FTM1_QD_PHB}
   - {pin_num: '37', peripheral: GPIOE, signal: 'GPIO, 29', pin_signal: HSADC0A_CH4/CMP1_IN5/CMP0_IN5/PTE29/FTM0_CH2/FTM_CLKIN0, direction: OUTPUT, drive_strength: high,
-    pull_select: up}
+    pull_select: up, pull_enable: enable}
   - {pin_num: '38', peripheral: GPIOE, signal: 'GPIO, 30', pin_signal: DAC0_OUT/CMP1_IN3/HSADC0A_CH5/PTE30/FTM0_CH3/FTM_CLKIN1, direction: OUTPUT, drive_strength: high,
-    pull_select: up}
+    pull_select: up, pull_enable: enable}
   - {pin_num: '72', peripheral: OSC0, signal: EXTAL0, pin_signal: EXTAL0/PTA18/XB_IN7/FTM0_FLT2/FTM_CLKIN0/XB_OUT8/FTM3_CH2, identifier: EXTAL0}
   - {pin_num: '73', peripheral: OSC0, signal: XTAL0, pin_signal: XTAL0/PTA19/XB_IN8/FTM1_FLT0/FTM_CLKIN1/XB_OUT9/LPTMR0_ALT1}
   - {pin_num: '74', peripheral: RCM, signal: RESET, pin_signal: RESET_b}
@@ -248,15 +248,15 @@ void BOARD_InitPins(void)
 
     PORTE->PCR[19] = ((PORTE->PCR[19] &
                        /* Mask bits to zero which are setting */
-                       (~(PORT_PCR_PS_MASK | PORT_PCR_DSE_MASK | PORT_PCR_ISF_MASK)))
-
-                      /* Drive Strength Enable: High drive strength is configured on the corresponding pin, if
-                       * pin is configured as a digital output. */
-                      | PORT_PCR_DSE(kPORT_HighDriveStrength)
+                       (~(PORT_PCR_PS_MASK | PORT_PCR_PE_MASK | PORT_PCR_DSE_MASK | PORT_PCR_ISF_MASK)))
 
                       /* Pull Select: Internal pullup resistor is enabled on the corresponding pin, if the
                        * corresponding PE field is set. */
-                      | PORT_PCR_PS(kPORT_PullUp));
+                      | (uint32_t)(kPORT_PullUp)
+
+                      /* Drive Strength Enable: High drive strength is configured on the corresponding pin, if
+                       * pin is configured as a digital output. */
+                      | PORT_PCR_DSE(kPORT_HighDriveStrength));
 
     /* PORTE20 (pin 25) is configured as UART0_TX */
     PORT_SetPinMux(BOARD_DEBUG_UART_RX_PORT, BOARD_DEBUG_UART_RX_PIN, kPORT_MuxAlt4);
@@ -269,30 +269,30 @@ void BOARD_InitPins(void)
 
     PORTE->PCR[29] = ((PORTE->PCR[29] &
                        /* Mask bits to zero which are setting */
-                       (~(PORT_PCR_PS_MASK | PORT_PCR_DSE_MASK | PORT_PCR_ISF_MASK)))
-
-                      /* Drive Strength Enable: High drive strength is configured on the corresponding pin, if
-                       * pin is configured as a digital output. */
-                      | PORT_PCR_DSE(kPORT_HighDriveStrength)
+                       (~(PORT_PCR_PS_MASK | PORT_PCR_PE_MASK | PORT_PCR_DSE_MASK | PORT_PCR_ISF_MASK)))
 
                       /* Pull Select: Internal pullup resistor is enabled on the corresponding pin, if the
                        * corresponding PE field is set. */
-                      | PORT_PCR_PS(kPORT_PullUp));
+                      | (uint32_t)(kPORT_PullUp)
+
+                      /* Drive Strength Enable: High drive strength is configured on the corresponding pin, if
+                       * pin is configured as a digital output. */
+                      | PORT_PCR_DSE(kPORT_HighDriveStrength));
 
     /* PORTE30 (pin 38) is configured as PTE30 */
     PORT_SetPinMux(BOARD_LED_RED_PORT, BOARD_LED_RED_PIN, kPORT_MuxAsGpio);
 
     PORTE->PCR[30] = ((PORTE->PCR[30] &
                        /* Mask bits to zero which are setting */
-                       (~(PORT_PCR_PS_MASK | PORT_PCR_DSE_MASK | PORT_PCR_ISF_MASK)))
-
-                      /* Drive Strength Enable: High drive strength is configured on the corresponding pin, if
-                       * pin is configured as a digital output. */
-                      | PORT_PCR_DSE(kPORT_HighDriveStrength)
+                       (~(PORT_PCR_PS_MASK | PORT_PCR_PE_MASK | PORT_PCR_DSE_MASK | PORT_PCR_ISF_MASK)))
 
                       /* Pull Select: Internal pullup resistor is enabled on the corresponding pin, if the
                        * corresponding PE field is set. */
-                      | PORT_PCR_PS(kPORT_PullUp));
+                      | (uint32_t)(kPORT_PullUp)
+
+                      /* Drive Strength Enable: High drive strength is configured on the corresponding pin, if
+                       * pin is configured as a digital output. */
+                      | PORT_PCR_DSE(kPORT_HighDriveStrength));
 
     SIM->SOPT5 = ((SIM->SOPT5 &
                    /* Mask bits to zero which are setting */

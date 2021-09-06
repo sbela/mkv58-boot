@@ -19,7 +19,7 @@
     <stringAttribute key="com.nxp.mcuxpresso.segger.device" value="MKV58F1M0xxx24"/>
     <stringAttribute key="com.nxp.mcuxpresso.segger.endian" value="little"/>
     <stringAttribute key="com.nxp.mcuxpresso.segger.halt.target" value="-halt"/>
-    <stringAttribute key="com.nxp.mcuxpresso.segger.if" value="SWD"/>
+    <stringAttribute key="com.nxp.mcuxpresso.segger.if" value="JTAG"/>
     <stringAttribute key="com.nxp.mcuxpresso.segger.init.register" value="-noir"/>
     <stringAttribute key="com.nxp.mcuxpresso.segger.jlinkscriptfile" value=""/>
     <stringAttribute key="com.nxp.mcuxpresso.segger.options" value=""/>
@@ -72,10 +72,16 @@
     <intAttribute key="org.eclipse.cdt.launch.ATTR_BUILD_BEFORE_LAUNCH_ATTR" value="2"/>
     <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_ID" value="gdb"/>
     <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_START_MODE" value="remote"/>
-    <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="Debug/AS_IPCard_Boot.axf"/>
-    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="AS_IPCard_Boot"/>
+    <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="Debug/as_ipcard_boot.axf"/>
+    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="as_ipcard_boot"/>
     <booleanAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_AUTO_ATTR" value="false"/>
-    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value=""/>
+    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value="com.crt.advproject.config.exe.debug.1870032117"/>
+    <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+        <listEntry value="/as_ipcard_boot"/>
+    </listAttribute>
+    <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+        <listEntry value="4"/>
+    </listAttribute>
     <mapAttribute key="org.eclipse.debug.core.preferred_launchers">
         <mapEntry key="[debug]" value="com.nxp.mcuxpresso.core.debug.support.segger.dsfLaunchDelegate"/>
     </mapAttribute>
