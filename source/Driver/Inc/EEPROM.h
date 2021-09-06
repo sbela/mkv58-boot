@@ -16,7 +16,9 @@ enum EEPROMRAMAddress
 {
 	SM_BOOT_EXEC,
 	SM_STAY_IN_BOOT = 4,
-	SM_BOOT_IP = 8,
+	SM_IP = 8,
+	SM_MASK = 12,
+	SM_GW = 16,
 	SM_ON_TIME = 20,
 	SM_WORK_TIME = 24,
 	SM_ID = 28,
