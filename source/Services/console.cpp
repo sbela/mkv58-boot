@@ -179,7 +179,7 @@ void HardFault_Handler(void)
 {
 	HPrintf("\r\n-----------[ HARD FAULT ]-------------\r\n");
 	while (1)
-			;
+		;
 }
 
 #define HELP(x)	Printf("\r\n\t" x);
@@ -227,9 +227,9 @@ static void ProcessCommand(int len)
 		if (command_buffer[strlen("ip")] == ' ')
 		{
 			ip.addr = ipaddr_addr(command_buffer + strlen("ip "));
-			WriteDataToEEPROM(SM_IP, (BYTE *)&ip.addr, 4);
+			WriteDataToEEPROM(SM_IP, (BYTE*)&ip.addr, 4);
 		}
-		ReadDataFromEEPROM(SM_IP, (BYTE *)&ip.addr, 4);
+		ReadDataFromEEPROM(SM_IP, (BYTE*)&ip.addr, 4);
 		Printf("\r\nIP: %s", ip4addr_ntoa(&ip));
 		return;
 	}
@@ -239,9 +239,9 @@ static void ProcessCommand(int len)
 		if (command_buffer[strlen("mask")] == ' ')
 		{
 			ip.addr = ipaddr_addr(command_buffer + strlen("mask "));
-			WriteDataToEEPROM(SM_MASK, (BYTE *)&ip.addr, 4);
+			WriteDataToEEPROM(SM_MASK, (BYTE*)&ip.addr, 4);
 		}
-		ReadDataFromEEPROM(SM_MASK, (BYTE *)&ip.addr, 4);
+		ReadDataFromEEPROM(SM_MASK, (BYTE*)&ip.addr, 4);
 		Printf("\r\nMASK: %s", ip4addr_ntoa(&ip));
 		return;
 	}
@@ -251,9 +251,9 @@ static void ProcessCommand(int len)
 		if (command_buffer[strlen("gw")] == ' ')
 		{
 			ip.addr = ipaddr_addr(command_buffer + strlen("gw "));
-			WriteDataToEEPROM(SM_GW, (BYTE *)&ip.addr, 4);
+			WriteDataToEEPROM(SM_GW, (BYTE*)&ip.addr, 4);
 		}
-		ReadDataFromEEPROM(SM_GW, (BYTE *)&ip.addr, 4);
+		ReadDataFromEEPROM(SM_GW, (BYTE*)&ip.addr, 4);
 		Printf("\r\nGW: %s", ip4addr_ntoa(&ip));
 		return;
 	}
