@@ -286,3 +286,25 @@ void FirmwareDataReceived(uint8_t *data, size_t len)
 		}
 	}
 }
+
+void FirmwareDataCopyToApp()
+{
+	Printf("\r\nFirmware copy started: %d byte!", len);
+	status_t status = FLASH_Init(&flash_config);
+
+	Printf("\r\nFlash init: %s [%d]\r\nFlash page size: %d\r\n", status == kStatus_FTFx_Success ? "Success" : "Failed!", status,
+			flash_config.ftfxConfig[0].flashDesc.sectorSize);
+
+	if (status == kStatus_FTFx_Success)
+	{
+		if (BootFlashErase())
+		{
+			memset(firmware_flash_page, 0, FLASH_PAGE_SIZE);
+			flash_page_pos = 0;
+			flash_program_start = FLASH_APP_START_ADDR;
+			flash_program_transfer_len = FLASH_APP_LENGTH;
+			SetBootToApp(0);
+			FirmwareDataReceived(FLASH_APP_LENGTH);
+		}
+	}
+}

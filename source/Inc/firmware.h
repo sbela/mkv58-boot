@@ -47,6 +47,7 @@ void ReBoot();
 void FlashErase();
 void FirmwareDataReceived(uint8_t *data, size_t len);
 int InitFirmwareTransfer(int len);
+void FirmwareDataCopyToApp();
 
 #ifdef __cplusplus
 }
