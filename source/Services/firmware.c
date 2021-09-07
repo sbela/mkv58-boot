@@ -321,7 +321,7 @@ void FirmwareDataCopyToApp()
 			flash_program_start = FLASH_APP_START_ADDR;
 			flash_program_transfer_len = firmware_len;
 			SetBootToApp(0);
-			//FirmwareDataReceived(FLASH_APP_LENGTH);
+			FirmwareDataReceived((uint8_t *)FLASH_DOWNLOAD_START_ADDR, firmware_len);
 		}
 	}
 }
