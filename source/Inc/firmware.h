@@ -31,6 +31,12 @@
 #define APP_VECTOR_TABLE 				((uint32_t *)FLASH_APP_START_ADDR)
 #define FLASH_PAGE_SIZE					8192
 
+enum BootStatus
+{
+	BS_Boot_Exec,
+	BS_CopyFirmware
+};
+
 enum _vector_table_entries
 {
 	kInitialSP = 0, //!< Initial stack pointer.

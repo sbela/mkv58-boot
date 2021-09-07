@@ -182,7 +182,7 @@ static void get_user_application_entry(uint32_t *appEntry, uint32_t *appStack)
 
 void BootToApp()
 {
-	HPrintf("\r\nBooting: APP!");
+	HPrintf("\r\nBooting: APP!\r\n");
 	// Get the user application entry point and stack pointer.
 	static uint32_t applicationAddress, stackPointer;
 	get_user_application_entry(&applicationAddress, &stackPointer);
@@ -191,10 +191,18 @@ void BootToApp()
 
 void SetBootToApp(int enable)
 {
-	WriteDataToEEPROM(SM_BOOT_EXEC, (BYTE*)&enable, 4);
+	uint32_t status = 0;
+	ReadDataFromEEPROM(SM_BOOT_STATUS, (BYTE*)&status, 4);
+
+	if (enable)
+		status |= (1 << BS_Boot_Exec);
+	else
+		status &= ~(1 << BS_Boot_Exec);
+
+	WriteDataToEEPROM(SM_BOOT_STATUS, (BYTE*)&status, 4);
 	vTaskDelay(10);
-	ReadDataFromEEPROM(SM_BOOT_EXEC, (BYTE*)&enable, 4);
-	Printf("\r\n\tBoot to App is %s SET!", enable ? "" : "NOT");
+	ReadDataFromEEPROM(SM_BOOT_STATUS, (BYTE*)&status, 4);
+	Printf("\r\n\tBoot to App is %s SET!", (status & (1 << BS_Boot_Exec)) ? "" : "NOT");
 }
 
 static TimerHandle_t firmwareTimer = 0;
@@ -289,7 +297,16 @@ void FirmwareDataReceived(uint8_t *data, size_t len)
 
 void FirmwareDataCopyToApp()
 {
-	Printf("\r\nFirmware copy started: %d byte!", len);
+	uint32_t firmware_len = 0;
+	ReadDataFromEEPROM(SM_FIRMWARE_LEN, (BYTE*)&firmware_len, sizeof firmware_len);
+
+	if (!firmware_len)
+	{
+		Printf("\r\nFirmware length is invalid!");
+		return;
+	}
+
+	Printf("\r\nFirmware copy started: %d byte!", firmware_len);
 	status_t status = FLASH_Init(&flash_config);
 
 	Printf("\r\nFlash init: %s [%d]\r\nFlash page size: %d\r\n", status == kStatus_FTFx_Success ? "Success" : "Failed!", status,
@@ -302,9 +319,9 @@ void FirmwareDataCopyToApp()
 			memset(firmware_flash_page, 0, FLASH_PAGE_SIZE);
 			flash_page_pos = 0;
 			flash_program_start = FLASH_APP_START_ADDR;
-			flash_program_transfer_len = FLASH_APP_LENGTH;
+			flash_program_transfer_len = firmware_len;
 			SetBootToApp(0);
-			FirmwareDataReceived(FLASH_APP_LENGTH);
+			//FirmwareDataReceived(FLASH_APP_LENGTH);
 		}
 	}
 }

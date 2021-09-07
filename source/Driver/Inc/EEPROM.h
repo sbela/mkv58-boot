@@ -12,10 +12,10 @@
 
 typedef uint8_t BYTE;
 // EEPROM
-enum EEPROMRAMAddress
+enum EEPROMAddresses
 {
-	SM_BOOT_EXEC,
-	SM_STAY_IN_BOOT = 4,
+	SM_BOOT_STATUS,
+	SM_FIRMWARE_LEN = 4,
 	SM_IP = 8,
 	SM_MASK = 12,
 	SM_GW = 16,

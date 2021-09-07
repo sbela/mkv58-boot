@@ -77,9 +77,12 @@ static void ProcessReceived(uint8_t *buffer, int len)
 	{
 		if (*buffer == '\b')
 		{
-			command_buffer[command_ptr] = 0;
-			command_ptr--;
-			UART_RTOS_Send(&UART0_rtos_handle, (const uint8_t*)"\b \b", 3);
+			if (command_ptr)
+			{
+				command_buffer[command_ptr] = 0;
+				command_ptr--;
+				UART_RTOS_Send(&UART0_rtos_handle, (const uint8_t*)"\b \b", 3);
+			}
 		}
 		else if (*buffer == '\r' || *buffer == '\n')
 		{
@@ -197,7 +200,8 @@ static void ProcessCommand(int len)
 	}
 	if (strpos(command_buffer, "bootapp") == 0)
 	{
-		BootToApp();
+		SetBootToApp(0);
+		NVIC_SystemReset();
 	}
 	if (strpos(command_buffer, "boot") == 0)
 	{
@@ -208,11 +212,18 @@ static void ProcessCommand(int len)
 		if (command_buffer[strlen("setboot")] == ' ')
 		{
 			int boot = atoi(command_buffer + strlen("setboot ")) ? 1 : 0;
-			WriteDataToEEPROM(SM_BOOT_EXEC, (BYTE*)&boot, sizeof boot);
+			uint32_t status = 0;
+			ReadDataFromEEPROM(SM_BOOT_STATUS, (BYTE*)&status, 4);
+			if (boot)
+				status |= (1 << BS_Boot_Exec);
+			else
+				status &= ~(1 << BS_Boot_Exec);
+			WriteDataToEEPROM(SM_BOOT_STATUS, (BYTE*)&status, sizeof status);
+			vTaskDelay(10);
 		}
 		uint32_t stay_in_boot = 1000;
-		ReadDataFromEEPROM(SM_BOOT_EXEC, (BYTE*)&stay_in_boot, sizeof stay_in_boot);
-		Printf("\r\nBoot to app [%d]", stay_in_boot);
+		ReadDataFromEEPROM(SM_BOOT_STATUS, (BYTE*)&stay_in_boot, sizeof stay_in_boot);
+		Printf("\r\nBoot to app [%d]", not (stay_in_boot & (1 << BS_Boot_Exec)));
 	}
 	if (strpos(command_buffer, "ver") == 0)
 	{
@@ -226,6 +237,7 @@ static void ProcessCommand(int len)
 		{
 			ip.addr = ipaddr_addr(command_buffer + strlen("ip "));
 			WriteDataToEEPROM(SM_IP, (BYTE*)&ip.addr, 4);
+			vTaskDelay(10);
 		}
 		ReadDataFromEEPROM(SM_IP, (BYTE*)&ip.addr, 4);
 		Printf("\r\nIP: %s", ip4addr_ntoa(&ip));
@@ -238,6 +250,7 @@ static void ProcessCommand(int len)
 		{
 			ip.addr = ipaddr_addr(command_buffer + strlen("mask "));
 			WriteDataToEEPROM(SM_MASK, (BYTE*)&ip.addr, 4);
+			vTaskDelay(10);
 		}
 		ReadDataFromEEPROM(SM_MASK, (BYTE*)&ip.addr, 4);
 		Printf("\r\nMASK: %s", ip4addr_ntoa(&ip));
@@ -250,6 +263,7 @@ static void ProcessCommand(int len)
 		{
 			ip.addr = ipaddr_addr(command_buffer + strlen("gw "));
 			WriteDataToEEPROM(SM_GW, (BYTE*)&ip.addr, 4);
+			vTaskDelay(10);
 		}
 		ReadDataFromEEPROM(SM_GW, (BYTE*)&ip.addr, 4);
 		Printf("\r\nGW: %s", ip4addr_ntoa(&ip));

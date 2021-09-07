@@ -97,18 +97,20 @@ int main(void)
 
 	uint32_t boot_is_pushed = not GPIO_PinRead(BOARD_BOOT_GPIO, BOARD_BOOT_PIN);
 	HPrintf("\r\nBOOT pin is : [%s]\r\n", boot_is_pushed ? "PUSHED" : "NOT PUSHED");
-	uint32_t stay_in_boot = 1000;
-	ReadDataFromEEPROM(SM_BOOT_EXEC, (BYTE*)&stay_in_boot, sizeof stay_in_boot);
-	HPrintf("\r\nSTAY IN BOOT is [%d]: [%s]\r\n", stay_in_boot, stay_in_boot ? "SET" : "NOT SET");
+	uint32_t boot_status = 1000;
+	ReadDataFromEEPROM(SM_BOOT_STATUS, (BYTE*)&boot_status, sizeof boot_status);
+	HPrintf("\r\nSTAY IN BOOT is [%04x]: [%s]\r\n", boot_status, (boot_status & (1 << BS_Boot_Exec)) ? "SET" : "NOT SET");
 
-	if (boot_is_pushed || stay_in_boot)
+	if (boot_is_pushed or (boot_status & (1 << BS_Boot_Exec)))
 	{
 		xTaskCreate(MainTask, "MainTask", 256, NULL, (tskIDLE_PRIORITY + 1), NULL);
-		//xTaskCreate(network_init, "network_init", 256, NULL, (tskIDLE_PRIORITY + 1), NULL);
-		//xTaskCreate(ftp_server_task, "ftp_server_task", 256, NULL, (tskIDLE_PRIORITY + 1), NULL);
 		vTaskStartScheduler();
 	}
 	else
+	{
+		if (boot_status & (1 << BS_CopyFirmware))
+			FirmwareDataCopyToApp();
 		BootToApp();
+	}
 	return 0; // Never reached!
 }
