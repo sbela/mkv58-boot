@@ -79,10 +79,11 @@ static void ProcessReceived(uint8_t *buffer, int len)
 		{
 			command_buffer[command_ptr] = 0;
 			command_ptr--;
-			UART_RTOS_Send(&UART0_rtos_handle, (const uint8_t*)" \b", 2);
+			UART_RTOS_Send(&UART0_rtos_handle, (const uint8_t*)"\b \b", 3);
 		}
 		else if (*buffer == '\r' || *buffer == '\n')
 		{
+			UART_RTOS_Send(&UART0_rtos_handle, buffer, len);
 			ProcessCommand(command_ptr);
 			memset(command_buffer, 0, command_ptr);
 			command_ptr = 0;
@@ -92,6 +93,7 @@ static void ProcessReceived(uint8_t *buffer, int len)
 		{
 			memcpy(command_buffer + command_ptr, buffer, len);
 			command_ptr += len;
+			UART_RTOS_Send(&UART0_rtos_handle, buffer, len);
 		}
 	}
 	else
@@ -145,11 +147,7 @@ void uart_task(void *pvParameters)
 		{
 			recv_buffer[n] = 0;
 			if (input_state == IS_Command)
-			{
-				// echo
-				UART_RTOS_Send(&UART0_rtos_handle, recv_buffer, n);
 				ProcessReceived(recv_buffer, n);
-			}
 			else
 				// IS_Firmware
 				FirmwareDataReceived(recv_buffer, n);
