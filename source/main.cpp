@@ -99,16 +99,16 @@ int main(void)
 	HPrintf("\r\nBOOT pin is : [%s]\r\n", boot_is_pushed ? "PUSHED" : "NOT PUSHED");
 	uint32_t boot_status = 1000;
 	ReadDataFromEEPROM(SM_CONFGIG_BITS, (BYTE*)&boot_status, sizeof boot_status);
-	HPrintf("\r\nSTAY IN BOOT is [%04x]: [%s]\r\n", boot_status, (boot_status & (1 << BS_Boot_Exec)) ? "SET" : "NOT SET");
+	HPrintf("\r\nSTAY IN BOOT is [%04x]: [%s]\r\n", boot_status, (boot_status & (1 << BC_Boot_Exec)) ? "SET" : "NOT SET");
 
-	if (boot_is_pushed or (boot_status & (1 << BS_Boot_Exec)))
+	if (boot_is_pushed or (boot_status & (1 << BC_Boot_Exec)))
 	{
 		xTaskCreate(MainTask, "MainTask", 256, NULL, (tskIDLE_PRIORITY + 1), NULL);
 		vTaskStartScheduler();
 	}
 	else
 	{
-		if (boot_status & (1 << BS_CopyFirmware))
+		if (boot_status & (1 << BC_CopyFirmware))
 			FirmwareDataCopyToApp();
 		BootToApp();
 	}

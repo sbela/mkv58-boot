@@ -189,20 +189,25 @@ void BootToApp()
 	jump_to_application(applicationAddress, stackPointer);
 }
 
-void SetBootToApp(int enable)
+inline void SetBoot(int enable)
 {
 	uint32_t status = 0;
 	ReadDataFromEEPROM(SM_CONFGIG_BITS, (BYTE*)&status, 4);
 
 	if (enable)
-		status |= (1 << BS_Boot_Exec);
+		status |= (1 << BC_Boot_Exec);
 	else
-		status &= ~(1 << BS_Boot_Exec);
+		status &= ~(1 << BC_Boot_Exec);
 
 	WriteDataToEEPROM(SM_CONFGIG_BITS, (BYTE*)&status, 4);
 	vTaskDelay(10);
-	ReadDataFromEEPROM(SM_CONFGIG_BITS, (BYTE*)&status, 4);
-	Printf("\r\n\tBoot to App is %s SET!", (status & (1 << BS_Boot_Exec)) ? "" : "NOT");
+}
+
+void SetBootToApp(int enable)
+{
+	SetBoot(enable);
+	ReadDataFromEEPROM(SM_CONFGIG_BITS, (BYTE*)&enable, 4);
+	Printf("\r\n\tBoot to App is %s SET!", (enable & (1 << BC_Boot_Exec)) ? "" : "NOT");
 }
 
 static TimerHandle_t firmwareTimer = 0;
