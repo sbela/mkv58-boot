@@ -213,16 +213,16 @@ static void ProcessCommand(int len)
 		{
 			int boot = atoi(command_buffer + strlen("setboot ")) ? 1 : 0;
 			uint32_t status = 0;
-			ReadDataFromEEPROM(SM_BOOT_STATUS, (BYTE*)&status, 4);
+			ReadDataFromEEPROM(SM_CONFGIG_BITS, (BYTE*)&status, 4);
 			if (boot)
 				status |= (1 << BS_Boot_Exec);
 			else
 				status &= ~(1 << BS_Boot_Exec);
-			WriteDataToEEPROM(SM_BOOT_STATUS, (BYTE*)&status, sizeof status);
+			WriteDataToEEPROM(SM_CONFGIG_BITS, (BYTE*)&status, sizeof status);
 			vTaskDelay(10);
 		}
 		uint32_t stay_in_boot = 1000;
-		ReadDataFromEEPROM(SM_BOOT_STATUS, (BYTE*)&stay_in_boot, sizeof stay_in_boot);
+		ReadDataFromEEPROM(SM_CONFGIG_BITS, (BYTE*)&stay_in_boot, sizeof stay_in_boot);
 		Printf("\r\nBoot to app [%d]", not (stay_in_boot & (1 << BS_Boot_Exec)));
 	}
 	if (strpos(command_buffer, "ver") == 0)

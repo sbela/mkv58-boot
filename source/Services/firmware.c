@@ -192,16 +192,16 @@ void BootToApp()
 void SetBootToApp(int enable)
 {
 	uint32_t status = 0;
-	ReadDataFromEEPROM(SM_BOOT_STATUS, (BYTE*)&status, 4);
+	ReadDataFromEEPROM(SM_CONFGIG_BITS, (BYTE*)&status, 4);
 
 	if (enable)
 		status |= (1 << BS_Boot_Exec);
 	else
 		status &= ~(1 << BS_Boot_Exec);
 
-	WriteDataToEEPROM(SM_BOOT_STATUS, (BYTE*)&status, 4);
+	WriteDataToEEPROM(SM_CONFGIG_BITS, (BYTE*)&status, 4);
 	vTaskDelay(10);
-	ReadDataFromEEPROM(SM_BOOT_STATUS, (BYTE*)&status, 4);
+	ReadDataFromEEPROM(SM_CONFGIG_BITS, (BYTE*)&status, 4);
 	Printf("\r\n\tBoot to App is %s SET!", (status & (1 << BS_Boot_Exec)) ? "" : "NOT");
 }
 
