@@ -28,7 +28,7 @@ static inline int BootFlashErase()
 {
 	Printf("\r\nBootloader FlashErase!");
 	flash_prot_state_t security_state;
-	int __FLASH_CONFIG_START__ = 0x400;
+	extern uint32_t __FLASH_CONFIG_START__;
 	*((int*)__FLASH_CONFIG_START__) = 0xFFFFFFFF;
 	status_t status = FLASH_IsProtected(&flash_config, FLASH_APP_START_ADDR, FLASH_APP_LENGTH, &security_state);
 	if (status == kStatus_FTFx_Success)
