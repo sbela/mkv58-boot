@@ -92,7 +92,7 @@ instance:
       - baudrate: '115200'
       - parity: 'kUART_ParityDisabled'
       - stopbits: 'kUART_OneStopBit'
-      - buffer_size: '256'
+      - buffer_size: '257'
     - interrupt_rx_tx:
       - IRQn: 'UART0_RX_TX_IRQn'
       - enable_priority: 'true'

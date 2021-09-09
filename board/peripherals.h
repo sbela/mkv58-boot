@@ -28,7 +28,7 @@ extern "C" {
 /* Definition of the clock source frequency */
 #define UART0_CLOCK_SOURCE CLOCK_GetFreq(UART0_CLK_SRC)
 /* Definition of the backround buffer size */
-#define UART0_BACKGROUND_BUFFER_SIZE 256
+#define UART0_BACKGROUND_BUFFER_SIZE 257
 /* UART0 interrupt vector ID (number). */
 #define UART0_SERIAL_RX_TX_IRQN UART0_RX_TX_IRQn
 /* UART0 interrupt vector priority. */

@@ -13,6 +13,8 @@
 #include "fsl_uart_freertos.h"
 #include "peripherals.h"
 
+#define FIRMWARE_RECV_LEN	256
+
 typedef enum InputState {
 	IS_Command,
 	IS_Firmware

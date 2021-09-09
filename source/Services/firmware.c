@@ -15,22 +15,23 @@
 #include "EEPROM.h"
 #include "console.h"
 
-void ReBoot()
-{
-	Printf("\r\nReset HW!");
-	NVIC_SystemReset();
-}
-
 static flash_config_t flash_config;
+static _Bool g_flash_init_done = false;
 static uint8_t firmware_flash_page[FLASH_PAGE_SIZE];
 
-static inline int BootFlashErase()
+static int FlashErase(uint32_t start_address, uint32_t length)
 {
-	Printf("\r\nBootloader FlashErase!");
+	if (!g_flash_init_done)
+	{
+		HPrintf("\r\nFlash not initialized!");
+		return 0;
+	}
+	HPrintf("\r\nBootloader FlashErase @%08x:%d bytes!", start_address, length);
 	flash_prot_state_t security_state;
-	extern uint32_t __FLASH_CONFIG_START__;
+	extern int __FLASH_CONFIG_START__;
 	*((int*)__FLASH_CONFIG_START__) = 0xFFFFFFFF;
-	status_t status = FLASH_IsProtected(&flash_config, FLASH_APP_START_ADDR, FLASH_APP_LENGTH, &security_state);
+	status_t status = FLASH_IsProtected(&flash_config, start_address, length, &security_state);
+	HPrintf("\r\nFlash IsProtected:%08x!", status);
 	if (status == kStatus_FTFx_Success)
 	{
 		if (security_state != kFLASH_ProtectionStateUnprotected)
@@ -39,65 +40,30 @@ static inline int BootFlashErase()
 			status = FTFx_CMD_SecurityBypass(&flash_config.ftfxConfig[0], (const uint8_t*)&backdoorKey);
 			if (status == kStatus_FTFx_Success)
 			{
-				status = FLASH_IsProtected(&flash_config, FLASH_APP_START_ADDR, FLASH_APP_LENGTH, &security_state);
+				status = FLASH_IsProtected(&flash_config, start_address, length, &security_state);
 				if (status != kStatus_FTFx_Success)
-					Printf("\r\nBootloader FlashErase... Security STILL ON[%d]!", security_state);
+					HPrintf("\r\nBootloader FlashErase... Security STILL ON[%d]!", security_state);
+				HPrintf("\r\nFlash Erase Security2:%08x!", security_state);
 			}
 			else
-				Printf("\r\nBootloader CMD SecurityBypass Failed! [%d]", status);
+				HPrintf("\r\nBootloader CMD SecurityBypass Failed! [%d]", status);
 		}
 		if (security_state == kFLASH_ProtectionStateUnprotected)
 		{
+			HPrintf("\r\nFlash Erase Security:%08x!", security_state);
 			__disable_irq();
-			status = FLASH_Erase(&flash_config, FLASH_APP_START_ADDR, FLASH_APP_LENGTH, FLASH_VALIDATE_KEY);
+			status = FLASH_Erase(&flash_config, start_address, length, FLASH_VALIDATE_KEY);
 			__enable_irq();
 			if (status != kStatus_FTFx_Success)
-				Printf("\r\nFlashErase...[%d] [%08x]!", status, security_state);
+				HPrintf("\r\nFlashErase...[%d] [%08x]!", status, security_state);
 			return status == 0 ? 1 : 0;
 		}
 		else
-			Printf("\r\nBootloader FlashErase... Security ON[%d]!", security_state);
+			HPrintf("\r\nBootloader FlashErase... Security ON[%d]!", security_state);
 	}
 	else
-		Printf("\r\nBootloader FlashErase... Failed to get FLASH_IsProtected! [%d]", status);
+		HPrintf("\r\nBootloader FlashErase... Failed to get FLASH_IsProtected! [%d]", status);
 	return 0;
-}
-
-static int flash_init_done = 0;
-void FlashErase()
-{
-	status_t status = kStatus_FTFx_Success;
-	if (flash_init_done == 0)
-	{
-		status = FLASH_Init(&flash_config);
-		Printf("\r\nFlash init: %s [%d]\r\nFlash page size: %d\r\n", status == kStatus_FTFx_Success ? "Success" : "Failed!", status,
-				flash_config.ftfxConfig[0].flashDesc.sectorSize);
-		flash_init_done = 1;
-	}
-
-	if (status == kStatus_FTFx_Success)
-	{
-		Printf("\r\nFlashErase! [%08x]:[%08x]\r\n", FLASH_APP_START_ADDR, FLASH_APP_LENGTH);
-		vTaskDelay(10);
-		flash_prot_state_t security_state;
-		status = FLASH_IsProtected(&flash_config, FLASH_APP_START_ADDR, FLASH_APP_LENGTH, &security_state);
-		if (status == kStatus_FTFx_Success)
-		{
-			if (security_state == kFLASH_ProtectionStateUnprotected)
-			{
-				__disable_irq();
-				status = FLASH_Erase(&flash_config, FLASH_APP_START_ADDR, FLASH_APP_LENGTH, FLASH_VALIDATE_KEY);
-				__enable_irq();
-				if (status != kStatus_FTFx_Success)
-					Printf("\r\nFlashErase:[%d] [%08x]! [%08x]:[%08x]", status, security_state, FLASH_APP_START_ADDR, FLASH_APP_LENGTH);
-				vTaskDelay(10);
-			}
-			else
-				Printf("\r\nFlashErase... Security ON[%d]!", security_state);
-		}
-		else
-			Printf("\r\nFlashErase... Failed to get FLASH_IsProtected! [%d]", status);
-	}
 }
 
 /** \brief  Clear Enabled IRQs
@@ -207,7 +173,7 @@ void SetBootToApp(int enable)
 {
 	SetBoot(enable);
 	ReadDataFromEEPROM(SM_CONFGIG_BITS, (BYTE*)&enable, 4);
-	Printf("\r\n\tBoot to App is %s SET!", (enable & (1 << BC_Boot_Exec)) ? "" : "NOT");
+	HPrintf("\r\n\tBoot to App is %s SET!", (enable & (1 << BC_Boot_Exec)) ? "" : "NOT");
 }
 
 static TimerHandle_t firmwareTimer = 0;
@@ -226,6 +192,7 @@ static void vFirmwareTimeoutCallback(TimerHandle_t xTimer)
 static int flash_page_pos = 0;
 static int flash_program_start = 0;
 static int flash_program_transfer_len = 0;
+static int flash_program_len = 0;
 int InitFirmwareTransfer(int len)
 {
 	Printf("\r\nFirmware update started: %d byte!", len);
@@ -236,13 +203,15 @@ int InitFirmwareTransfer(int len)
 
 	if (status == kStatus_FTFx_Success)
 	{
-		if (BootFlashErase())
+		g_flash_init_done = true;
+		if (FlashErase(FLASH_DOWNLOAD_START_ADDR, FLASH_APP_LENGTH))
 		{
 			firmwareTimer = xTimerCreate("FirmwareTimer", FIRMWARE_TIMER_TIMEOUT, pdFALSE, NULL, vFirmwareTimeoutCallback);
 			memset(firmware_flash_page, 0, FLASH_PAGE_SIZE);
 			flash_page_pos = 0;
-			flash_program_start = FLASH_APP_START_ADDR;
+			flash_program_start = FLASH_DOWNLOAD_START_ADDR;
 			flash_program_transfer_len = len;
+			flash_program_len = len;
 			SetBootToApp(0);
 			Printf("FIRMWARE-START:");
 			if (firmwareTimer && (xTimerStart(firmwareTimer , 0) != pdPASS))
@@ -253,49 +222,81 @@ int InitFirmwareTransfer(int len)
 	return 0;
 }
 
-void FirmwareDataReceived(uint8_t *data, size_t len)
+void FirmwareDataReceived(uint8_t *data, size_t len, int copy)
 {
+	if (!copy)
+		HPrintf("\r\nFirmware copy %d started: ", len);
 	status_t status = kStatus_Success;
 	while (len--)
 	{
 		if (flash_page_pos < FLASH_PAGE_SIZE)
 		{
 			firmware_flash_page[flash_page_pos++] = *data++;
-			if (flash_page_pos % 8 == 0)
-				Printf("A"); // ACK
+			if ((flash_page_pos % FIRMWARE_RECV_LEN == 0) && (flash_page_pos < FLASH_PAGE_SIZE))
+			{
+				printf("*");
+				if (xTimerReset(firmwareTimer, 10) != pdPASS)
+					printf("B"); // NACK
+				if (copy)
+					Printf("ACK"); // ACK
+				else
+					HPrintf("*");
+			}
 		}
 
 		if (flash_page_pos == FLASH_PAGE_SIZE)
 		{
-			Printf("*");
 			__disable_irq();
 			status = FLASH_Program(&flash_config, flash_program_start, firmware_flash_page, FLASH_PAGE_SIZE);
 			__enable_irq();
 			if (status != kStatus_Success)
-				Printf("FLASH_Program failed: [%d] at [%08x]!\r\n", status, flash_program_start);
+				HPrintf("FLASH_Program failed: [%d] at [%08x]!\r\n", status, flash_program_start);
 			memset(firmware_flash_page, 0, FLASH_PAGE_SIZE);
 			flash_program_start += FLASH_PAGE_SIZE;
 			flash_page_pos = 0;
+			if (copy)
+				Printf("ACK"); // ACK
 		}
 
 		if (--flash_program_transfer_len == 0)
 		{
+		    printf("\ncopy...done");
+		    printf("\n");
+
+			WriteDataToEEPROM(SM_FIRMWARE_LEN, (BYTE*)&flash_program_len, 4);
+			vTaskDelay(10);
+
 			if (flash_page_pos)
 			{
-				Printf("*");
 				__disable_irq();
 				status = FLASH_Program(&flash_config, flash_program_start, firmware_flash_page, flash_page_pos);
 				__enable_irq();
 				if (status != kStatus_Success)
-					Printf("FLASH_Program failed: [%d] at [%08x]!\r\n", status, flash_program_start);
+					HPrintf("FLASH_Program failed: [%d] at [%08x]!\r\n", status, flash_program_start);
+				if (copy)
+					Printf("ACK");
 			}
+
 			if (firmwareTimer)
 				xTimerDelete(firmwareTimer, 0);
 
 			SetInputState(IS_Command);
-			Printf("\r\nBootloader Firmware received!\r\n# ");
+			if (copy)
+				Printf("\r\nBootloader Firmware received!\r\n# ");
+			else
+				HPrintf("\r\nBootloader Firmware copied!\r\n# ");
 			if (status == kStatus_Success)
-				BootToApp();
+			{
+				uint32_t status = 0;
+				ReadDataFromEEPROM(SM_CONFGIG_BITS, (BYTE*)&status, 4);
+				if (copy)
+					status |= (1 << BC_CopyFirmware);
+				else
+					status &= ~(1 << BC_CopyFirmware);
+				WriteDataToEEPROM(SM_CONFGIG_BITS, (BYTE*)&status, 4);
+				vTaskDelay(10);
+				NVIC_SystemReset();
+			}
 		}
 	}
 }
@@ -305,28 +306,31 @@ void FirmwareDataCopyToApp()
 	uint32_t firmware_len = 0;
 	ReadDataFromEEPROM(SM_FIRMWARE_LEN, (BYTE*)&firmware_len, sizeof firmware_len);
 
-	if (!firmware_len)
+	if (firmware_len > -1)
 	{
-		Printf("\r\nFirmware length is invalid!");
+		HPrintf("\r\nFirmware length is invalid!");
 		return;
 	}
 
-	Printf("\r\nFirmware copy started: %d byte!", firmware_len);
+	HPrintf("\r\nFirmware copy started: %d byte!", firmware_len);
 	status_t status = FLASH_Init(&flash_config);
 
-	Printf("\r\nFlash init: %s [%d]\r\nFlash page size: %d\r\n", status == kStatus_FTFx_Success ? "Success" : "Failed!", status,
+	HPrintf("\r\nFlash init: %s [%d]\r\nFlash page size: %d\r\n", status == kStatus_FTFx_Success ? "Success" : "Failed!", status,
 			flash_config.ftfxConfig[0].flashDesc.sectorSize);
 
 	if (status == kStatus_FTFx_Success)
 	{
-		if (BootFlashErase())
+		g_flash_init_done = true;
+		if (FlashErase(FLASH_APP_START_ADDR, FLASH_APP_LENGTH))
 		{
 			memset(firmware_flash_page, 0, FLASH_PAGE_SIZE);
 			flash_page_pos = 0;
 			flash_program_start = FLASH_APP_START_ADDR;
 			flash_program_transfer_len = firmware_len;
-			SetBootToApp(0);
-			FirmwareDataReceived((uint8_t *)FLASH_DOWNLOAD_START_ADDR, firmware_len);
+			//SetBootToApp(0);
+			FirmwareDataReceived((uint8_t *)FLASH_DOWNLOAD_START_ADDR, firmware_len, false);
 		}
+		else
+			HPrintf("\r\nErase FAILED!");
 	}
 }

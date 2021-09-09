@@ -310,6 +310,7 @@ int UART_RTOS_Receive(uart_rtos_handle_t *handle, uint8_t *buffer, uint32_t leng
     ev = xEventGroupWaitBits(handle->rxEvent,
                              RTOS_UART_COMPLETE | RTOS_UART_RING_BUFFER_OVERRUN | RTOS_UART_HARDWARE_BUFFER_OVERRUN,
                              pdTRUE, pdFALSE, portMAX_DELAY);
+
     if (ev & RTOS_UART_HARDWARE_BUFFER_OVERRUN)
     {
         /* Stop data transfer to application buffer, ring buffer is still active */

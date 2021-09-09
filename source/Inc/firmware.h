@@ -50,9 +50,7 @@ extern "C" {
 
 void SetBootToApp(int enable);
 void BootToApp();
-void ReBoot();
-void FlashErase();
-void FirmwareDataReceived(uint8_t *data, size_t len);
+void FirmwareDataReceived(uint8_t *data, size_t len, int copy);
 int InitFirmwareTransfer(int len);
 void FirmwareDataCopyToApp();
 void SetBoot(int enable);

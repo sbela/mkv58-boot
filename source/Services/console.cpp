@@ -14,9 +14,12 @@
 #include "mutexlocker.h"
 #include "EEPROM.h"
 
+#define BACKGROUND_BUFFER_SIZE (UART0_BACKGROUND_BUFFER_SIZE - 1)
+
 static SemaphoreHandle_t xUARTSemaphore = nullptr;
 
 static InputState input_state = IS_Command;
+static int g_receive_buffer_length = 1;
 
 static int strpos(char *haystack, const char *needle)
 {
@@ -31,26 +34,26 @@ void InitConsole()
 	xUARTSemaphore = xSemaphoreCreateMutex();
 }
 
-static char CBuffer[UART0_BACKGROUND_BUFFER_SIZE] = { 0 };
+static char CBuffer[BACKGROUND_BUFFER_SIZE] = { 0 };
 int Printf(const char *format, ...)
 {
 	AS::MutexLocker m(xUARTSemaphore);
 	va_list vArgs;
 	va_start(vArgs, format);
-	int len = vsnprintf(CBuffer, UART0_BACKGROUND_BUFFER_SIZE, format, vArgs);
+	int len = vsnprintf(CBuffer, BACKGROUND_BUFFER_SIZE, format, vArgs);
 	va_end(vArgs);
 	if (len > 0)
 		return UART_RTOS_Send(&UART0_rtos_handle, (const uint8_t*)CBuffer, len);
 	return len;
 }
 
-static char HBuffer[UART0_BACKGROUND_BUFFER_SIZE] = { 0 };
+static char HBuffer[BACKGROUND_BUFFER_SIZE] = { 0 };
 static char *HBuffPntr;
 void HPrintf(const char *format, ...)
 {
 	va_list vArgs;
 	va_start(vArgs, format);
-	int len = vsnprintf((char*)HBuffer, UART0_BACKGROUND_BUFFER_SIZE, format, vArgs);
+	int len = vsnprintf((char*)HBuffer, BACKGROUND_BUFFER_SIZE, format, vArgs);
 	va_end(vArgs);
 
 	if (len > 0)
@@ -110,18 +113,18 @@ static void ProcessReceived(uint8_t *buffer, int len)
 
 static const char *send_ring_overrun = "\r\nRing buffer overrun!\r\n";
 static const char *send_hardware_overrun = "\r\nHardware buffer overrun!\r\n";
+static uint8_t recv_buffer[BACKGROUND_BUFFER_SIZE];
 void uart_task(void *pvParameters)
 {
 	int error;
 	size_t n;
-	uint8_t recv_buffer[8];
 	memset(command_buffer, 0, COMMAND_LEN);
 
 	Printf("- RUN: serial RX task\r\n%s", prompt);
 	/* Receive user input and send it back to terminal. */
 	do
 	{
-		error = UART_RTOS_Receive(&UART0_rtos_handle, recv_buffer, 1, &n);
+		error = UART_RTOS_Receive(&UART0_rtos_handle, recv_buffer, g_receive_buffer_length, &n);
 		if (error == kStatus_UART_RxHardwareOverrun)
 		{
 			/* Notify about hardware buffer overrun */
@@ -153,7 +156,7 @@ void uart_task(void *pvParameters)
 				ProcessReceived(recv_buffer, n);
 			else
 				// IS_Firmware
-				FirmwareDataReceived(recv_buffer, n);
+				FirmwareDataReceived(recv_buffer, n, true);
 		}
 	} while (kStatus_Success == error);
 
@@ -165,6 +168,8 @@ void uart_task(void *pvParameters)
 void SetInputState(InputState state)
 {
 	input_state = state;
+	if (input_state == IS_Command)
+		g_receive_buffer_length = 1;
 }
 
 //--------------------------------------------------------------------------------------//
@@ -192,7 +197,10 @@ static void ProcessCommand(int len)
 		if ((firmware_length > 0) && (firmware_length < FLASH_APP_LENGTH))
 		{
 			if (InitFirmwareTransfer(firmware_length))
+			{
+				g_receive_buffer_length = FIRMWARE_RECV_LEN;
 				input_state = IS_Firmware;
+			}
 		}
 		else
 			Printf("\r\nInvalid firmware length: %d", firmware_length);

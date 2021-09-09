@@ -669,7 +669,7 @@
                            <setting name="baudrate" value="115200"/>
                            <setting name="parity" value="kUART_ParityDisabled"/>
                            <setting name="stopbits" value="kUART_OneStopBit"/>
-                           <setting name="buffer_size" value="256"/>
+                           <setting name="buffer_size" value="257"/>
                         </struct>
                         <struct name="interrupt_rx_tx">
                            <setting name="IRQn" value="UART0_RX_TX_IRQn"/>
