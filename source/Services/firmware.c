@@ -158,21 +158,21 @@ void BootToApp()
 inline void SetBoot(int enable)
 {
 	uint32_t status = 0;
-	ReadDataFromEEPROM(SM_CONFGIG_BITS, (BYTE*)&status, 4);
+	ReadDataFromEEPROM(SM_CONFIG_BITS, (BYTE*)&status, 4);
 
 	if (enable)
 		status |= (1 << BC_Boot_Exec);
 	else
 		status &= ~(1 << BC_Boot_Exec);
 
-	WriteDataToEEPROM(SM_CONFGIG_BITS, (BYTE*)&status, 4);
+	WriteDataToEEPROM(SM_CONFIG_BITS, (BYTE*)&status, 4);
 	vTaskDelay(10);
 }
 
 void SetBootToApp(int enable)
 {
 	SetBoot(enable);
-	ReadDataFromEEPROM(SM_CONFGIG_BITS, (BYTE*)&enable, 4);
+	ReadDataFromEEPROM(SM_CONFIG_BITS, (BYTE*)&enable, 4);
 	HPrintf("\r\n\tBoot to App is %s SET!", (enable & (1 << BC_Boot_Exec)) ? "" : "NOT");
 }
 
@@ -289,12 +289,12 @@ void FirmwareDataReceived(uint8_t *data, size_t len, int download)
 			if (status == kStatus_Success)
 			{
 				uint32_t status = 0;
-				ReadDataFromEEPROM(SM_CONFGIG_BITS, (BYTE*)&status, 4);
+				ReadDataFromEEPROM(SM_CONFIG_BITS, (BYTE*)&status, 4);
 				if (download)
 					status |= (1 << BC_CopyFirmware);
 				else
 					status &= ~(1 << BC_CopyFirmware);
-				WriteDataToEEPROMNoDelay(SM_CONFGIG_BITS, (BYTE*)&status, 4);
+				WriteDataToEEPROMNoDelay(SM_CONFIG_BITS, (BYTE*)&status, 4);
 				if (download)
 					vTaskDelay(20);
 				NVIC_SystemReset();
@@ -312,9 +312,9 @@ void FirmwareDataCopyToApp()
 	{
 		HPrintf("\r\nFirmware length is invalid!");
 		uint32_t status = 0;
-		ReadDataFromEEPROM(SM_CONFGIG_BITS, (BYTE*)&status, 4);
+		ReadDataFromEEPROM(SM_CONFIG_BITS, (BYTE*)&status, 4);
 		status &= ~(1 << BC_CopyFirmware);
-		WriteDataToEEPROMNoDelay(SM_CONFGIG_BITS, (BYTE*)&status, 4);
+		WriteDataToEEPROMNoDelay(SM_CONFIG_BITS, (BYTE*)&status, 4);
 		return;
 	}
 

@@ -223,7 +223,7 @@ static void ProcessCommand(int len)
 			SetBoot(boot);
 		}
 		uint32_t stay_in_boot = 1000;
-		ReadDataFromEEPROM(SM_CONFGIG_BITS, (BYTE*)&stay_in_boot, sizeof stay_in_boot);
+		ReadDataFromEEPROM(SM_CONFIG_BITS, (BYTE*)&stay_in_boot, sizeof stay_in_boot);
 		Printf("\r\nBoot to app [%d]", not (stay_in_boot & (1 << BC_Boot_Exec)));
 	}
 	if (strpos(command_buffer, "ver") == 0)

@@ -14,7 +14,7 @@ typedef uint8_t BYTE;
 // EEPROM
 enum EEPROMAddresses
 {
-	SM_CONFGIG_BITS,
+	SM_CONFIG_BITS,
 	SM_FIRMWARE_LEN = 4,
 	SM_IP = 8,
 	SM_MASK = 12,

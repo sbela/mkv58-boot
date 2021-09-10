@@ -98,7 +98,7 @@ int main(void)
 	uint32_t boot_is_pushed = not GPIO_PinRead(BOARD_BOOT_GPIO, BOARD_BOOT_PIN);
 	HPrintf("\r\nBOOT pin is : [%s]\r\n", boot_is_pushed ? "PUSHED" : "NOT PUSHED");
 	uint32_t boot_status = 1000;
-	ReadDataFromEEPROM(SM_CONFGIG_BITS, (BYTE*)&boot_status, sizeof boot_status);
+	ReadDataFromEEPROM(SM_CONFIG_BITS, (BYTE*)&boot_status, sizeof boot_status);
 	HPrintf("\r\nSTAY IN BOOT is [%04x]: [%s]\r\n", boot_status, (boot_status & (1 << BC_Boot_Exec)) ? "SET" : "NOT SET");
 
 	if (boot_is_pushed or (boot_status & (1 << BC_Boot_Exec)))
