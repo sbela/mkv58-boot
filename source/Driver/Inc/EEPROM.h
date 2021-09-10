@@ -31,6 +31,7 @@ extern "C" {
 #endif
 
 void WriteDataToEEPROM(BYTE Addr, BYTE *Data, BYTE Len);
+void WriteDataToEEPROMNoDelay(BYTE Addr, BYTE *Data, BYTE Len);
 void ReadDataFromEEPROM(BYTE Addr, BYTE *Data, BYTE Len);
 void ReadEEPROMNodeAddress(BYTE *NodeAddr);
 

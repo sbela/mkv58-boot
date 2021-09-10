@@ -16,6 +16,24 @@
 static i2c_master_transfer_t masterXfer;
 static status_t i2C_status;
 
+void WriteDataToEEPROMNoDelay(BYTE Addr, BYTE *Data, BYTE Len)
+{
+	masterXfer.direction = kI2C_Write;
+	masterXfer.slaveAddress = 0x50U;
+	masterXfer.subaddress = Addr;
+	masterXfer.subaddressSize = 1;
+	masterXfer.data = Data;
+	masterXfer.dataSize = Len;
+	masterXfer.flags = kI2C_TransferDefaultFlag;
+
+	i2C_status = I2C_MasterTransferBlocking(I2C0_PERIPHERAL, &masterXfer);
+	if (i2C_status != kStatus_Success)
+	{
+		HPrintf("\r\nI2C master: error during write transaction: %d\r\n",
+				i2C_status);
+	}
+}
+
 void WriteDataToEEPROM(BYTE Addr, BYTE *Data, BYTE Len)
 {
 	masterXfer.direction = kI2C_Write;
@@ -48,7 +66,7 @@ void ReadDataFromEEPROM(BYTE Addr, BYTE *Data, BYTE Len)
 	i2C_status = I2C_MasterTransferBlocking(I2C0_PERIPHERAL, &masterXfer);
 	if (i2C_status != kStatus_Success)
 	{
-		Printf("\r\nI2C master: error during read transaction: %d\r\n",
+		HPrintf("\r\nI2C master: error during read transaction: %d\r\n",
 				i2C_status);
 	}
 }

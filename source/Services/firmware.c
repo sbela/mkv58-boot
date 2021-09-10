@@ -28,7 +28,7 @@ static int FlashErase(uint32_t start_address, uint32_t length)
 	}
 	HPrintf("\r\nBootloader FlashErase @%08x:%d bytes!", start_address, length);
 	flash_prot_state_t security_state;
-	extern int __FLASH_CONFIG_START__;
+	int __FLASH_CONFIG_START__ = 0x400;
 	*((int*)__FLASH_CONFIG_START__) = 0xFFFFFFFF;
 	status_t status = FLASH_IsProtected(&flash_config, start_address, length, &security_state);
 	HPrintf("\r\nFlash IsProtected:%08x!", status);
@@ -222,9 +222,9 @@ int InitFirmwareTransfer(int len)
 	return 0;
 }
 
-void FirmwareDataReceived(uint8_t *data, size_t len, int copy)
+void FirmwareDataReceived(uint8_t *data, size_t len, int download)
 {
-	if (!copy)
+	if (!download)
 		HPrintf("\r\nFirmware copy %d started: ", len);
 	status_t status = kStatus_Success;
 	while (len--)
@@ -232,15 +232,11 @@ void FirmwareDataReceived(uint8_t *data, size_t len, int copy)
 		if (flash_page_pos < FLASH_PAGE_SIZE)
 		{
 			firmware_flash_page[flash_page_pos++] = *data++;
-			if ((flash_page_pos % FIRMWARE_RECV_LEN == 0) && (flash_page_pos < FLASH_PAGE_SIZE))
+			if (((flash_page_pos % FIRMWARE_RECV_LEN == 0) && (flash_page_pos < FLASH_PAGE_SIZE)) && download)
 			{
-				printf("*");
 				if (xTimerReset(firmwareTimer, 10) != pdPASS)
 					printf("B"); // NACK
-				if (copy)
-					Printf("ACK"); // ACK
-				else
-					HPrintf("*");
+				Printf("ACK"); // ACK
 			}
 		}
 
@@ -254,17 +250,22 @@ void FirmwareDataReceived(uint8_t *data, size_t len, int copy)
 			memset(firmware_flash_page, 0, FLASH_PAGE_SIZE);
 			flash_program_start += FLASH_PAGE_SIZE;
 			flash_page_pos = 0;
-			if (copy)
+			if (download)
 				Printf("ACK"); // ACK
+			else
+			{
+				HPrintf("*");
+				printf("*");
+			}
 		}
 
 		if (--flash_program_transfer_len == 0)
 		{
-		    printf("\ncopy...done");
-		    printf("\n");
-
-			WriteDataToEEPROM(SM_FIRMWARE_LEN, (BYTE*)&flash_program_len, 4);
-			vTaskDelay(10);
+			if (download)
+			{
+				WriteDataToEEPROM(SM_FIRMWARE_LEN, (BYTE*)&flash_program_len, 4);
+				vTaskDelay(10);
+			}
 
 			if (flash_page_pos)
 			{
@@ -273,28 +274,29 @@ void FirmwareDataReceived(uint8_t *data, size_t len, int copy)
 				__enable_irq();
 				if (status != kStatus_Success)
 					HPrintf("FLASH_Program failed: [%d] at [%08x]!\r\n", status, flash_program_start);
-				if (copy)
+				if (download)
 					Printf("ACK");
 			}
 
-			if (firmwareTimer)
+			if (download && firmwareTimer)
 				xTimerDelete(firmwareTimer, 0);
 
 			SetInputState(IS_Command);
-			if (copy)
+			if (download)
 				Printf("\r\nBootloader Firmware received!\r\n# ");
 			else
-				HPrintf("\r\nBootloader Firmware copied!\r\n# ");
+				HPrintf("\r\nBootloader Firmware copied![%d]\r\n# ", status);
 			if (status == kStatus_Success)
 			{
 				uint32_t status = 0;
 				ReadDataFromEEPROM(SM_CONFGIG_BITS, (BYTE*)&status, 4);
-				if (copy)
+				if (download)
 					status |= (1 << BC_CopyFirmware);
 				else
 					status &= ~(1 << BC_CopyFirmware);
-				WriteDataToEEPROM(SM_CONFGIG_BITS, (BYTE*)&status, 4);
-				vTaskDelay(10);
+				WriteDataToEEPROMNoDelay(SM_CONFGIG_BITS, (BYTE*)&status, 4);
+				if (download)
+					vTaskDelay(20);
 				NVIC_SystemReset();
 			}
 		}
@@ -306,9 +308,13 @@ void FirmwareDataCopyToApp()
 	uint32_t firmware_len = 0;
 	ReadDataFromEEPROM(SM_FIRMWARE_LEN, (BYTE*)&firmware_len, sizeof firmware_len);
 
-	if (firmware_len > -1)
+	if ((firmware_len <= 0) || (firmware_len > FLASH_APP_LENGTH))
 	{
 		HPrintf("\r\nFirmware length is invalid!");
+		uint32_t status = 0;
+		ReadDataFromEEPROM(SM_CONFGIG_BITS, (BYTE*)&status, 4);
+		status &= ~(1 << BC_CopyFirmware);
+		WriteDataToEEPROMNoDelay(SM_CONFGIG_BITS, (BYTE*)&status, 4);
 		return;
 	}
 
@@ -327,8 +333,7 @@ void FirmwareDataCopyToApp()
 			flash_page_pos = 0;
 			flash_program_start = FLASH_APP_START_ADDR;
 			flash_program_transfer_len = firmware_len;
-			//SetBootToApp(0);
-			FirmwareDataReceived((uint8_t *)FLASH_DOWNLOAD_START_ADDR, firmware_len, false);
+			FirmwareDataReceived((uint8_t*)FLASH_DOWNLOAD_START_ADDR, firmware_len, false);
 		}
 		else
 			HPrintf("\r\nErase FAILED!");
