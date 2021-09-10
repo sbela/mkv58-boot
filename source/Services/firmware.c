@@ -5,13 +5,17 @@
  *      Author: sbela
  */
 
-#include "firmware.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "timers.h"
+
+#include "board.h"
+#include "peripherals.h"
 #include "pin_mux.h"
 #include "fsl_flash.h"
 #include "fsl_smc.h"
+
+#include "firmware.h"
 #include "EEPROM.h"
 #include "console.h"
 
@@ -237,6 +241,7 @@ void FirmwareDataReceived(uint8_t *data, size_t len, int download)
 				if (xTimerReset(firmwareTimer, 10) != pdPASS)
 					printf("B"); // NACK
 				Printf("ACK"); // ACK
+				GPIO_PortToggle(BOARD_LED_GREEN_GPIO, BOARD_LED_RED_GPIO_PIN_MASK);
 			}
 		}
 
@@ -257,6 +262,7 @@ void FirmwareDataReceived(uint8_t *data, size_t len, int download)
 				HPrintf("*");
 				printf("*");
 			}
+			GPIO_PortToggle(BOARD_LED_GREEN_GPIO, BOARD_LED_RED_GPIO_PIN_MASK);
 		}
 
 		if (--flash_program_transfer_len == 0)
@@ -277,6 +283,8 @@ void FirmwareDataReceived(uint8_t *data, size_t len, int download)
 				if (download)
 					Printf("ACK");
 			}
+
+			GPIO_PinWrite(BOARD_LED_GREEN_GPIO, BOARD_LED_RED_PIN, 0);
 
 			if (download && firmwareTimer)
 				xTimerDelete(firmwareTimer, 0);
