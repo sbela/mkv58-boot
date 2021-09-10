@@ -161,7 +161,7 @@ void uart_task(void *pvParameters)
 	} while (kStatus_Success == error);
 
 	UART_RTOS_Deinit(&UART0_rtos_handle);
-	printf("TX Suspend 3\r\n");
+	printf("TX Finished\r\n");
 	vTaskSuspend(NULL);
 }
 
