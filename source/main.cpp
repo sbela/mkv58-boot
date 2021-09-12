@@ -35,13 +35,10 @@
 #include "pin_mux.h"
 #include "clock_config.h"
 #include "MKV58F24.h"
-#include "fsl_debug_console.h"
 
 #include "EEPROM.h"
 #include "console.h"
 #include "firmware.h"
-#include "ftp_service.h"
-#include "network.h"
 
 static const char *version_date[] = { __DATE__, __TIME__ };
 const char* version(int ver)
@@ -58,7 +55,6 @@ static void MainTask(void *pvParameters)
 	int FlashTimer = 0;
 
 	InitConsole();
-	InitMACAddress();
 
 	Printf("\r\n");
 	Printf("*********************************\r\n");
@@ -66,7 +62,6 @@ static void MainTask(void *pvParameters)
 	Printf("V1.0\r\n");
 	Printf("Created: 2021.09\r\n");
 	Printf("Program: AutoSys boot program\r\n");
-	PrintMACAddress();
 	Printf("BUILT: %s %s\r\n", version_date[0], version_date[1]);
 	Printf("*********************************\r\n");
 	Printf("- RUN: uart task: 0x%x\r\n", xTaskCreate(uart_task, "uart_task", 256, NULL, tskIDLE_PRIORITY, NULL));

@@ -7,12 +7,11 @@
 
 #include "FreeRTOS.h"
 #include "semphr.h"
-#include "lwip/tcpip.h"
 
+#include "EEPROM.h"
 #include "console.h"
 #include "firmware.h"
 #include "mutexlocker.h"
-#include "EEPROM.h"
 
 #define BACKGROUND_BUFFER_SIZE (UART0_BACKGROUND_BUFFER_SIZE - 1)
 
@@ -248,54 +247,12 @@ static void ProcessCommand(int len)
 		Printf("BUILT: %s %s\r\n", version(0), version(1));
 		return;
 	}
-	if (strpos(command_buffer, "ip") == 0)
-	{
-		ip4_addr_t ip;
-		if (command_buffer[strlen("ip")] == ' ')
-		{
-			ip.addr = ipaddr_addr(command_buffer + strlen("ip "));
-			WriteDataToEEPROM(SM_IP, (BYTE*)&ip.addr, 4);
-			vTaskDelay(10);
-		}
-		ReadDataFromEEPROM(SM_IP, (BYTE*)&ip.addr, 4);
-		Printf("\r\nIP: %s", ip4addr_ntoa(&ip));
-		return;
-	}
-	if (strpos(command_buffer, "mask") == 0)
-	{
-		ip4_addr_t ip;
-		if (command_buffer[strlen("mask")] == ' ')
-		{
-			ip.addr = ipaddr_addr(command_buffer + strlen("mask "));
-			WriteDataToEEPROM(SM_MASK, (BYTE*)&ip.addr, 4);
-			vTaskDelay(10);
-		}
-		ReadDataFromEEPROM(SM_MASK, (BYTE*)&ip.addr, 4);
-		Printf("\r\nMASK: %s", ip4addr_ntoa(&ip));
-		return;
-	}
-	if (strpos(command_buffer, "gw") == 0)
-	{
-		ip4_addr_t ip;
-		if (command_buffer[strlen("gw")] == ' ')
-		{
-			ip.addr = ipaddr_addr(command_buffer + strlen("gw "));
-			WriteDataToEEPROM(SM_GW, (BYTE*)&ip.addr, 4);
-			vTaskDelay(10);
-		}
-		ReadDataFromEEPROM(SM_GW, (BYTE*)&ip.addr, 4);
-		Printf("\r\nGW: %s", ip4addr_ntoa(&ip));
-		return;
-	}
 	if (strpos(command_buffer, "help") == 0)
 	{
 		HELP("boot - reboot");
 		HELP("bootapp - boots application");
 		HELP("setboot - sets boot flag 1: stays in loader 0: boot to application");
 		HELP("ver - current firmware version");
-		HELP("ip - sets/gets current ip address");
-		HELP("mask - sets/gets current network mask");
-		HELP("gw - sets/gets current gateway address");
 		HELP("scpyrom - sets/gets current copy ROM to APP bit");
 		return;
 	}

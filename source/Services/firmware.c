@@ -15,8 +15,8 @@
 #include "fsl_flash.h"
 #include "fsl_smc.h"
 
-#include "firmware.h"
 #include "EEPROM.h"
+#include "firmware.h"
 #include "console.h"
 
 static flash_config_t flash_config;

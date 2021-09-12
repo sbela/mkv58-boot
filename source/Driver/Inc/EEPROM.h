@@ -12,7 +12,7 @@
 
 typedef uint8_t BYTE;
 // EEPROM
-enum EEPROMAddresses
+enum EEPROMRAMAddress
 {
 	SM_CONFIG_BITS,
 	SM_FIRMWARE_LEN = 4,
@@ -34,7 +34,7 @@ extern "C" {
 void WriteDataToEEPROM(BYTE Addr, BYTE *Data, BYTE Len);
 void WriteDataToEEPROMNoDelay(BYTE Addr, BYTE *Data, BYTE Len);
 void ReadDataFromEEPROM(BYTE Addr, BYTE *Data, BYTE Len);
-void ReadEEPROMNodeAddress(BYTE *NodeAddr);
+void ReadEEPROMNodeAddress(uint8_t *NodeAddr);
 
 #ifdef __cplusplus
 }
