@@ -22,6 +22,7 @@ enum EEPROMAddresses
 	SM_ON_TIME = 20,
 	SM_WORK_TIME = 24,
 	SM_ID = 28,
+	SM_LOADER_LEN = 32,
 	//---------------------------------------------------//
 	SM_EEPROM_NODE = 0xFA	// 6 * 1byte (EEPROM MAC ADDR)
 };

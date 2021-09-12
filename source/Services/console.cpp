@@ -226,6 +226,23 @@ static void ProcessCommand(int len)
 		ReadDataFromEEPROM(SM_CONFIG_BITS, (BYTE*)&stay_in_boot, sizeof stay_in_boot);
 		Printf("\r\nBoot to app [%d]", not (stay_in_boot & (1 << BC_Boot_Exec)));
 	}
+	if (strpos(command_buffer, "scpyrom") == 0)
+	{
+		int config;
+		if (command_buffer[strlen("scpyrom")] == ' ')
+		{
+			ReadDataFromEEPROM(SM_CONFIG_BITS, (BYTE*)&config, sizeof config);
+			int copy = atoi(command_buffer + strlen("scpyrom ")) ? 1 : 0;
+			if (copy)
+				config |= (1 << BC_CopyFirmware);
+			else
+				config &= ~(1 << BC_CopyFirmware);
+			WriteDataToEEPROM(SM_CONFIG_BITS, (BYTE*)&config, 4);
+			vTaskDelay(10);
+		}
+		ReadDataFromEEPROM(SM_CONFIG_BITS, (BYTE*)&config, sizeof config);
+		Printf("\r\nCopy ROM to APP is %s SET!", (config & (1 << BC_CopyFirmware)) ? "" : "NOT");
+	}
 	if (strpos(command_buffer, "ver") == 0)
 	{
 		Printf("BUILT: %s %s\r\n", version(0), version(1));
@@ -279,6 +296,7 @@ static void ProcessCommand(int len)
 		HELP("ip - sets/gets current ip address");
 		HELP("mask - sets/gets current network mask");
 		HELP("gw - sets/gets current gateway address");
+		HELP("scpyrom - sets/gets current copy ROM to APP bit");
 		return;
 	}
 }
