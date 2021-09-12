@@ -296,7 +296,6 @@ void FirmwareDataReceived(uint8_t *data, size_t len, int download)
 				HPrintf("\r\nBootloader Firmware copied![%d]\r\n# ", status);
 			if (status == kStatus_Success)
 			{
-				uint32_t status = 0;
 				ReadDataFromEEPROM(SM_CONFIG_BITS, (BYTE*)&status, 4);
 				if (download)
 					status |= (1 << BC_CopyFirmware);
